@@ -7,7 +7,7 @@ Axios Client with Interceptors
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/lib/stores/authStore';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003';
 
 // Create axios instance
 export const apiClient = axios.create({

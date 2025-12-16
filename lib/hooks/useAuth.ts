@@ -20,7 +20,7 @@ export function useAuth() {
         mutationFn: authApi.register,
         onSuccess: () => {
             toast.success('Registration successful! Please login.');
-            router.push('/login');
+            router.replace('/login');
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.detail || 'Registration failed');

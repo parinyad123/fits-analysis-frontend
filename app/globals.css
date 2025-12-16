@@ -116,7 +116,240 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  /* ปิด body/html scroll */
+  html,
   body {
     @apply bg-background text-foreground;
+    overflow: hidden; /* ← เพิ่มบรรทัดนี้ */
+    height: 100%;
+    width: 100%;
   }
+  
+  /* ปิด #__next scroll */
+  #__next {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* ============================================================
+   CHAT UI CUSTOM STYLES
+   ============================================================ */
+
+/* Markdown Prose Styling for Assistant Messages */
+@layer components {
+  .prose-chat {
+    @apply text-foreground max-w-none;
+  }
+
+  .prose-chat h1 {
+    @apply text-2xl font-bold mb-4 mt-6 text-foreground;
+  }
+
+  .prose-chat h2 {
+    @apply text-xl font-bold mb-3 mt-6 text-foreground;
+  }
+
+  .prose-chat h3 {
+    @apply text-lg font-bold mb-2 mt-4 text-foreground;
+  }
+
+  .prose-chat p {
+    @apply mb-4 leading-7;
+  }
+
+  .prose-chat ul {
+    @apply list-disc list-inside mb-4 space-y-2;
+  }
+
+  .prose-chat ol {
+    @apply list-decimal list-inside mb-4 space-y-2;
+  }
+
+  .prose-chat li {
+    @apply leading-relaxed;
+  }
+
+  .prose-chat code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  .prose-chat pre {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto mb-4;
+  }
+
+  .prose-chat pre code {
+    @apply bg-transparent px-0 py-0;
+  }
+
+  .prose-chat a {
+    @apply text-primary underline hover:text-primary/80 transition-colors;
+  }
+
+  .prose-chat strong {
+    @apply font-semibold;
+  }
+
+  .prose-chat em {
+    @apply italic;
+  }
+
+  .prose-chat blockquote {
+    @apply border-l-4 border-muted pl-4 italic my-4;
+  }
+
+  .prose-chat table {
+    @apply w-full border-collapse mb-4;
+  }
+
+  .prose-chat th {
+    @apply border border-border bg-muted px-4 py-2 text-left font-semibold;
+  }
+
+  .prose-chat td {
+    @apply border border-border px-4 py-2;
+  }
+
+  /* KaTeX Math Styling */
+  .prose-chat .katex {
+    @apply text-foreground;
+  }
+
+  .prose-chat .katex-display {
+    @apply my-4 overflow-x-auto;
+  }
+}
+
+/* Custom Scrollbar */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.5); /* gray-500 */
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.7);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
+}
+}
+
+/* Smooth Transitions */
+@layer utilities {
+  .transition-sidebar {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
+
+/* Plot Image Hover Effect */
+@layer components {
+  .plot-image {
+    @apply transition-transform duration-200 hover:scale-[1.02];
+  }
+}
+
+/* Message Bubble Animations */
+@layer utilities {
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-in-left {
+    animation: slideInFromLeft 0.3s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInFromRight 0.3s ease-out;
+  }
+}
+
+/* Gradient Background for Prompt Box */
+@layer utilities {
+  .gradient-prompt-bg {
+    background: linear-gradient(
+      to top,
+      var(--background) 0%,
+      var(--background) 60%,
+      transparent 100%
+    );
+  }
+}
+
+/* Loading Skeleton */
+@layer components {
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+}
+
+/* Toast Customization (if using sonner) */
+@layer components {
+  [data-sonner-toast] {
+    @apply bg-card text-card-foreground border border-border;
+  }
+
+  [data-sonner-toast][data-type='success'] {
+    @apply border-green-500;
+  }
+
+  [data-sonner-toast][data-type='error'] {
+    @apply border-destructive;
+  }
+}
+
+/* Font Variables */
+:root {
+  --font-geist-sans: 'Geist Sans', system-ui, sans-serif;
+  --font-geist-mono: 'Geist Mono', 'Courier New', monospace;
+}
+
+/* Apply fonts */
+body {
+  font-family: var(--font-geist-sans);
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--font-geist-mono);
+}
+
+/* Markdown code blocks */
+.prose-chat code {
+  font-family: var(--font-geist-mono);
+}
+
+.prose-chat pre code {
+  font-family: var(--font-geist-mono);
 }

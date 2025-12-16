@@ -11,45 +11,36 @@ import type {
     WorkflowStatusLight,
     // WorkflowStatusFull,
     AnalysisResultLight,
-    ApiResponse,
-} from '@/lib/types';
+} from '@/lib/types/analysis.types';
 
 export const analysisApi = {
     // Submit analysis request
     submitAnalysis: async (request: AnalyzeRequest): Promise<AnalyzeResponse> => {
-        const { data } = await apiClient.post<AnalyzeResponse>(
-            `{API_V2}/analyze`,
-            request
-        );
-        return data;
+        const response = await apiClient.post(`${API_V2}/analyze`, request);
+        return response.data;
     },
 
     // Get lightweight status (for polling)
-    getStatusLight: async (taskId: string): Promise<WorkflowStatusLight> => {
-        const { data } = await apiClient.get<WorkflowStatusLight>(
-            `${API_V2}/analyze/${taskId}/status`
-        );
-        return data;
+    getAnalysisStatus: async (taskId: string): Promise<WorkflowStatusLight> => {
+        const response = await apiClient.get(`${API_V2}/analyze/${taskId}/status`);
+        return response.data;
     },
 
     // Get analysis result only
-    getResult: async (taskId: string): Promise<AnalysisResultLight> => {
-        const { data } = await apiClient.get<AnalysisResultLight>(
-            `${API_V2}/analyze/${taskId}/result`
-        );
-        return data;
-    },
-
-    // Cancel workflow (not yet implemented in backend)
-    cancelWorkflow: async (taskId: string): Promise<ApiResponse> => {
-        const { data } = await apiClient.delete<ApiResponse>(
-        `${API_V2}/analyze/${taskId}`
-        );
-        return data;
+    getAnalysisResult: async (taskId: string): Promise<AnalysisResultLight> => {
+        const response = await apiClient.get(`${API_V2}/analyze/${taskId}/result`);
+        return response.data;
     },
 
     // Servcer-Sent Event stream URL
     getSSEUrl: (taskId: string): string => {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003';
         return `${API_V2}/analyze/${taskId}/stream`;
+    },
+
+    // Cancel workflow (not yet implemented in backend)
+    cancelAnalysis: async (taskId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`${API_V2}/analyze/${taskId}`);
+        return response.data;
     },
 };

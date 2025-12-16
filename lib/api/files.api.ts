@@ -10,39 +10,36 @@ import type {
     ApiResponse,
     PaginationParams,
     UserFilesResponse,
+    FileInfoFull,
 } from '@/lib/types';
+import type { SimpleApiResponse } from '@/lib/types/auth.types';
 
 export const filesApi = {
+
+    // Get user's FITS files
+    getUserFiles: async (offset=0, limit=20): Promise<UserFilesResponse> => {
+      const response = await apiClient.get(`${API_V2}/files`, {
+        params: { offset, limit }
+      });
+      return response.data
+    },
+
     // Upload FITS file
     uploadFile: async (file: File): Promise<FileUploadResponse> => {
-    const formData = new FormData();
-    formData.append('file', file);
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const { data } = await apiClient.post<FileUploadResponse>(
-      `${API_V2}/files/upload`,
-      formData,
-      {
+      const response = await apiClient.post(`${API_V2}/files/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-      }
-    );
-    return data;
-  },
-
-    // Get user's files (paginated, lightweight)
-    getFiles: async (params?: PaginationParams): Promise<UserFilesResponse> => {
-      const { data } = await apiClient.get<UserFilesResponse>(`${API_V2}/files`, {
-        params,
       });
-      return data;
+      return response.data;
     },
-
+    
     // Delete file (soft delete)
     deleteFile: async (fileId: string): Promise<ApiResponse> => {
-        const { data }= await apiClient.delete<ApiResponse>(
-            `${API_V2}/files/${fileId}`
-        );
-        return data;
+      const response = await apiClient.delete(`${API_V2}/files/${fileId}`);
+      return response.data;
     }
 }

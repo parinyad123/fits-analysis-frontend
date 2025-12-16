@@ -37,6 +37,7 @@ export interface AuthState {
     isLoading: boolean;
 }
 
-export interface ApiResponse {
+export interface SimpleApiResponse {
+    success?: boolean
     message: string;
 }

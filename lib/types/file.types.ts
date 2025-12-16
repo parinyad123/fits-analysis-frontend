@@ -51,14 +51,16 @@ export interface FileInfoLight {
 //   [key: string]: any;
 // }
 
-// export interface FileInfoFull extends FileInfoLight {
-//   user_id: string;
-//   metadata_filename: string | null;
-//   validation_error: string | null;
-//   last_accessed_at: string | null;
-//   fits_metadata: FitsMetadata | null;
-//   data_info: DataInfo | null;
-// }
+export interface FileInfoFull extends FileInfoLight {
+  user_id: string;
+  metadata_filename: string | null;
+  validation_error: string | null;
+  last_accessed_at: string | null;
+  // fits_metadata: FitsMetadata | null;
+  // data_info: DataInfo | null;
+  fits_metadata: Record<string, any> | null;
+  data_info: Record<string, any> | null;
+}
 
 // ============================================
 // File List Response

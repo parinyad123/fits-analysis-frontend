@@ -10,15 +10,15 @@ import { filesApi } from '@/lib/api/files.api';
 import type { PaginationParams } from '@/lib/types';
 import { toast } from 'sonner';
 
-export function useFiles(params?: PaginationParams) {
+export function useFiles(offset = 0, limit = 20) {
     const queryClient = useQueryClient();
 
     // ==========================================
     // Get files query
     // ==========================================
     const filesQuery = useQuery({
-        queryKey: ['files', params],
-        queryFn: () => filesApi.getFiles(params),
+        queryKey: ['files', offset, limit],
+        queryFn: () => filesApi.getUserFiles(offset, limit),
     });
 
     // ==========================================
@@ -72,7 +72,7 @@ export function useFiles(params?: PaginationParams) {
 
         // Loading 
         isLoading: filesQuery.isLoading,        // Initial loading
-        isIploading: uploadMutation.isPending,  // upload in progress
+        isUploading: uploadMutation.isPending,  // upload in progress
         isDeleting: deleteMutation.isPending,   // Delete in progress
 
         // Actions

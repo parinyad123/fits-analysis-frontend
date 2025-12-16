@@ -18,7 +18,7 @@ export const conversationApi = {
         params?: PaginationParams
     ): Promise<ConversationResponse> => {
         const { data } = await apiClient.get<ConversationResponse>(
-            `${API_V2}/conversation/${sessionId}`,
+            `${API_V2}/conversations/${sessionId}`,
             { params }
         );
         return data;
@@ -27,7 +27,7 @@ export const conversationApi = {
     // Get message count for pagination
     getMessageCount: async (sessionId: string): Promise<MessageCountResponse> => {
         const { data } = await apiClient.get<MessageCountResponse>(
-            `${API_V2}/conversation/${sessionId}/count`
+            `${API_V2}/conversations/${sessionId}/count`
         );
         return data;
     }
