@@ -14,27 +14,41 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Auto scroll to bottom when messages change
+    // Scroll to bottom whenever messages change
     useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
+        const scrollToBottom = () => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ 
+                    behavior: 'auto', // ✅ เปลี่ยนจาก 'smooth' เป็น 'auto'
+                    block: 'end'      // ✅ เพิ่ม block: 'end'
+                });
+            }
+        };
+
+        // Scroll immediately
+        scrollToBottom();
+
+        // Scroll again after a short delay (for images/content loading)
+        const timer = setTimeout(scrollToBottom, 100);
+        
+        return () => clearTimeout(timer);
     }, [data?.messages]);
 
-    // Initial scroll to bottom when session loads
+    // Initial scroll when session loads
     useEffect(() => {
-        if (containerRef.current && data?.messages && data.messages.length > 0) {
-            setTimeout(() => {
+        if (containerRef.current) {
+            // Force scroll to bottom
+            requestAnimationFrame(() => {
                 if (containerRef.current) {
                     containerRef.current.scrollTop = containerRef.current.scrollHeight;
                 }
-            }, 100);
+            });
         }
     }, [sessionId]);
 
     if (isLoading) {
         return (
-            <div className='flex items-center justify-center h-full'>
+            <div className='flex items-center justify-center w-full h-full'>
                 <Loader2 className='h-8 w-8 animate-spin text-violet-500' />
             </div>
         );
@@ -44,7 +58,7 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
 
     if (messages.length === 0) {
         return (
-            <div className='flex flex-col items-center justify-center h-full text-center px-4'>
+            <div className='flex flex-col items-center justify-center w-full h-full text-center px-4'>
                 <div className='mb-6'>
                     <span className='text-6xl'>🔭</span>
                 </div>
@@ -60,25 +74,20 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
     }
 
     return (
-    <div
-        ref={containerRef}
-        className='h-full w-full overflow-y-auto overflow-x-hidden scrollbar-thin'
-        style={{ border: '3px solid red' }} // 🔴 ConversationArea
-    >
-        <div 
-            className='min-h-full flex flex-col justify-end'
-            style={{ border: '3px solid blue' }} // 🔵 Inner wrapper
+        <div
+            ref={containerRef}
+            className='w-full h-full overflow-y-auto overflow-x-hidden scrollbar-thin'
         >
-            <div 
-                className='pb-4'
-                style={{ border: '3px solid green' }} // 🟢 Messages
-            >
-                {messages.map((message) => (
-                    <MessageBubble key={message.message_id} message={message} />
-                ))}
-                <div ref={messagesEndRef} />
+            {/* ✅ เอา justify-end ออก เพราะ content สูงเกินพื้นที่ */}
+            <div className='min-h-full flex flex-col'>
+                <div className='flex-1' /> {/* ✅ Spacer ที่ยืดได้ */}
+                <div className='pb-4'>
+                    {messages.map((message) => (
+                        <MessageBubble key={message.message_id} message={message} />
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
 }

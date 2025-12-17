@@ -48,8 +48,8 @@ function DashboardContent() {
     };
 
     return (
-        <div className='h-full w-full flex flex-col'> {/* ✅ เพิ่ม w-full */}
-            <div className='flex-1 min-h-0 overflow-hidden'> {/* ✅ เพิ่ม overflow-hidden */}
+        <div className='h-full w-full flex flex-col'>
+            <div className='flex-1 min-h-0 overflow-hidden'>
                 <ConversationArea sessionId={sessionId} />
             </div>
             <div className='flex-shrink-0'>
