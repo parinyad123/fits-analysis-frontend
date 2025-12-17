@@ -61,11 +61,11 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             )}
         >
             {/* Header */}
-            <div className='flex items-center justify-between p-4 border-b border-gray-800'>
+            <div className='flex items-center justify-between p-4'>
                 {!collapsed && (
                     <div className='flex items-center gap-2'>
                         <span className='text-xl'>🔭</span>
-                        <h1 className='text-lg font-semibold text-white'>FITS Analysis</h1>
+                        <h1 className='text-lg font-semibold text-white whitespace-nowrap'>FITS Analysis</h1>
                     </div>
                 )}
                 <Button
@@ -97,8 +97,8 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             {/* Recent Chats */}
             {!collapsed && (
                 <div className='px-3 pt-6'>
-                    <h2 className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2'>
-                        Recent
+                    <h2 className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 whitespace-nowrap'>
+                        YOUR CHATS
                     </h2>
                     <ScrollArea className='h-[calc(100vh-200px)]'>
                         <div className='space-y-1'>
@@ -117,7 +117,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
                                         onClick={() => handleSelectSession(session.session_id)}
                                         className='flex items-center gap-2 px-3 py-2 pr-10 cursor-pointer text-sm'
                                     >
-                                        <MessageSquare className='h-4 w-4 flex-shrink-0 text-gray-400' />
+                                        {/* <MessageSquare className='h-4 w-4 flex-shrink-0 text-gray-400' /> */}
                                         <span
                                             className={cn(
                                                 'truncate',

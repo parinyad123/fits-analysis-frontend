@@ -77,10 +77,10 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
 
     return (
         // ✅ ไม่ใช้ absolute - ใช้ normal flow
-        <div className='w-full bg-[#1F1D3E] border-t border-gray-800 p-4'>
+        <div className='w-full bg-[#0f0f0f]  p-0'>
             <div className='max-w-4xl mx-auto'>
                 {/* Main Input Box */}
-                <div className='bg-gray-800 rounded-3xl border border-gray-700 shadow-2xl'>
+                <div className='bg-gray-900 rounded-3xl border border-gray-700 shadow-2xl overflow-hidden'>
                     {/* Textarea */}
                     <Textarea
                         value={message}
@@ -88,11 +88,12 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                         onKeyDown={handleKeyDown}
                         placeholder='Ask about your FITS file analysis...'
                         disabled={disabled}
-                        className='min-h-[80px] resize-none border-0 bg-transparent px-6 py-4 text-base focus-visible:ring-0 focus-visible:ring-offset-0'
+                        style={{ backgroundColor: 'transparent' }}
+                        className='min-h-[60px] resize-none border-0 bg-transparent px-6 py-4 text-base focus-visible:ring-0 focus-visible:ring-offset-0'
                     />
 
                     {/* Bottom Bar */}
-                    <div className='flex items-center justify-between px-4 pb-3'>
+                    <div className='flex items-center justify-between px-4 py-2'>
                         {/* Left Side - File Selection */}
                         <div className='flex items-center gap-2'>
                             {/* Add File Button */}
@@ -134,7 +135,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                         </div>
 
                                         {/* Existing Files */}
-                                        <div className='space-y-2 max-h-60 overflow-y-auto'>
+                                        <div className='space-y-2 max-h-80 overflow-y-auto'>
                                             {files.map((file) => (
                                                 <button
                                                     key={file.file_id}
@@ -209,7 +210,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                 </div>
 
                 {/* Helper Text */}
-                <p className='text-xs text-gray-500 text-center mt-2'>
+                <p className='text-xs text-gray-500 text-center my-0 py-2'>
                     Press Enter to send, Shift + Enter for new line
                 </p>
             </div>

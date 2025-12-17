@@ -30,7 +30,7 @@ export function Header() {
         : 'U';
 
     return (
-        <header className='border-b border-gray-800 bg-[#1A1825] px-6 py-3'>
+        <header className='border-b border-gray-900 bg-[#0f0f0f] px-6 py-3'>
         {/* <header className='border-b border-gray-800 bg-transparent px-6 py-3'> */}
             <div className='flex items-center justify-between'>
                 {/* Title */}
@@ -44,7 +44,7 @@ export function Header() {
                             aria-label='User menu'
                         >
                             <Avatar className='h-9 w-9'>
-                                <AvatarFallback className='bg-violet-200 text-white font-semibold'>
+                                <AvatarFallback className='bg-[#38761d] text-white font-semibold'>
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>
@@ -64,7 +64,7 @@ export function Header() {
                                 )}
                             </div>
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
+                        {/* <DropdownMenuSeparator />
                         <DropdownMenuItem className='cursor-pointer'>
                             <User className='mr-2 h-4 w-4' />
                             Profile
@@ -73,7 +73,7 @@ export function Header() {
                             <Settings className='mr-2 h-4 w-4' />
                             Settings
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator /> */}
                         <DropdownMenuItem
                             className='text-red-500 cursor-pointer'
                             onClick={logout}

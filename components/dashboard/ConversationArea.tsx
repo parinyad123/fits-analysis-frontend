@@ -1,3 +1,5 @@
+// components/dashboard/ConversationArea.tsx
+
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -58,7 +60,7 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
 
     if (messages.length === 0) {
         return (
-            <div className='flex flex-col items-center justify-center w-full h-full text-center px-4'>
+            <div className='flex flex-col items-center justify-center w-full h-full text-center px-4 bg-[#0f0f0f]'>
                 <div className='mb-6'>
                     <span className='text-6xl'>🔭</span>
                 </div>
@@ -67,7 +69,7 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
                 </h2>
                 <p className='text-gray-400 max-w-md'>
                     Upload a FITS file and ask questions about your X-ray astronomy data.
-                    I can help with PSD analysis, power law fitting, and more.
+                    I can help with PSD analysis, Power law fitting, and Bending Power law.
                 </p>
             </div>
         );
@@ -76,7 +78,7 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
     return (
         <div
             ref={containerRef}
-            className='w-full h-full overflow-y-auto overflow-x-hidden scrollbar-thin'
+            className='w-full h-full overflow-y-auto overflow-x-hidden scrollbar-thin bg-[#0f0f0f]'
         >
             {/* ✅ เอา justify-end ออก เพราะ content สูงเกินพื้นที่ */}
             <div className='min-h-full flex flex-col'>
