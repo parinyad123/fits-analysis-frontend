@@ -1,4 +1,4 @@
-// components/auth/LoginForm.tsx
+// components/auth/RegisterForm.tsx
 
 'use client';
 
@@ -9,18 +9,16 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 import { useAuth } from '@/lib/hooks/useAuth';
-import { loginSchema, type LoginFormData } from '@/lib/validations/auth.schemas';
+import { registerSchema, type RegisterFormData } from '@/lib/validations/auth.schemas';
 import { PasswordInput } from './PasswordInput';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { AxiosError } from 'axios';
 
-export function LoginForm() {
-    const { login, isLoggingIn, loginError } = useAuth();
-    const [rememberMe, setRememberMe] = useState(false);
+export function RegisterForm() {
+    const { register: registerUser, isRegistering, registerError } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     const {
@@ -29,31 +27,28 @@ export function LoginForm() {
         formState: { errors },
         watch,
         setValue,
-    } = useForm<LoginFormData>({
-        resolver: zodResolver(loginSchema),
+    } = useForm<RegisterFormData>({
+        resolver: zodResolver(registerSchema),
         defaultValues: {
             username: '',
+            email: '',
             password: '',
+            confirmPassword: '',
         },
     });
 
     const passwordValue = watch('password');
+    const confirmPasswordValue = watch('confirmPassword');
 
     useEffect(() => {
         setMounted(true);
+    }, []);
 
-        const remembered = localStorage.getItem('remember_username');
-        if (remembered) {
-            setValue('username', remembered);
-            setRememberMe(true);
-        }
-    }, [setValue]);
-
-    // ✅ Extract error message
+    // ✅ Extract error message from AxiosError
     const getApiErrorMessage = (): string | null => {
-        if (!loginError) return null;
+        if (!registerError) return null;
         
-        const axiosError = loginError as AxiosError<any>;
+        const axiosError = registerError as AxiosError<any>;
         
         if (axiosError.response?.data) {
             if (typeof axiosError.response.data === 'string') {
@@ -68,29 +63,27 @@ export function LoginForm() {
             }
         }
         
-        if (axiosError.response?.status === 401) {
-            return 'Incorrect username or password';
+        if (axiosError.message) {
+            return axiosError.message;
         }
         
-        return 'Login failed';
+        return 'Registration failed';
     };
 
     const apiErrorMessage = getApiErrorMessage();
 
-    const onSubmit = (data: LoginFormData) => {
-        if (rememberMe) {
-            localStorage.setItem('remember_username', data.username);
-        } else {
-            localStorage.removeItem('remember_username');
-        }
-        
-        login(data);
+    const onSubmit = (data: RegisterFormData) => {
+        registerUser({
+            username: data.username.toLowerCase().trim(),
+            password: data.password,
+            email: data.email?.trim() || undefined,
+        });
     };
 
+    // Show loading skeleton during SSR
     if (!mounted) {
         return (
             <div className='w-full max-w-md space-y-8'>
-                {/* Loading skeleton */}
                 <div className='text-center'>
                     <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10'>
                         <span className='text-2xl'>🔭</span>
@@ -99,10 +92,12 @@ export function LoginForm() {
                         FITS Analysis Application
                     </h1>
                     <p className='mt-2 text-sm text-gray-400'>
-                        Sign in to your account
+                        Create your account
                     </p>
                 </div>
                 <div className='space-y-6 animate-pulse'>
+                    <div className='h-10 bg-gray-800 rounded'></div>
+                    <div className='h-10 bg-gray-800 rounded'></div>
                     <div className='h-10 bg-gray-800 rounded'></div>
                     <div className='h-10 bg-gray-800 rounded'></div>
                     <div className='h-10 bg-violet-500/20 rounded'></div>
@@ -122,7 +117,7 @@ export function LoginForm() {
                     FITS Analysis Application
                 </h1>
                 <p className='mt-2 text-sm text-gray-400'>
-                    Sign in to your account
+                    Create your account
                 </p>
             </div>
 
@@ -144,13 +139,33 @@ export function LoginForm() {
                         id='username'
                         type='text'
                         placeholder='john_doe'
-                        disabled={isLoggingIn}
+                        disabled={isRegistering}
                         className={errors.username ? 'border-red-500 focus-visible:ring-red-500' : ''}
                         {...register('username')}
                     />
                     {errors.username && (
                         <p className='text-sm text-red-500'>
                             {errors.username.message}
+                        </p>
+                    )}
+                </div>
+
+                {/* Email Field */}
+                <div className='space-y-2'>
+                    <Label htmlFor='email' className='text-gray-300'>
+                        Email <span className='text-gray-500 text-sm'>(optional)</span>
+                    </Label>
+                    <Input
+                        id='email'
+                        type='email'
+                        placeholder='john@example.com'
+                        disabled={isRegistering}
+                        className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                        {...register('email')}
+                    />
+                    {errors.email && (
+                        <p className='text-sm text-red-500'>
+                            {errors.email.message}
                         </p>
                     )}
                 </div>
@@ -166,7 +181,7 @@ export function LoginForm() {
                         value={passwordValue}
                         onChange={(value) => setValue('password', value)}
                         placeholder='Enter your password'
-                        disabled={isLoggingIn}
+                        disabled={isRegistering}
                         error={!!errors.password}
                     />
                     {errors.password && (
@@ -176,35 +191,40 @@ export function LoginForm() {
                     )}
                 </div>
 
-                {/* Remember Me */}
-                <div className='flex items-center space-x-2'>
-                    <Checkbox
-                        id='remember'
-                        checked={rememberMe}
-                        onCheckedChange={(checked) => setRememberMe(checked === true)}
-                        disabled={isLoggingIn}
+                {/* Confirm Password Field */}
+                <div className='space-y-2'>
+                    <Label htmlFor='confirmPassword' className='text-gray-300'>
+                        Confirm Password
+                    </Label>
+                    <PasswordInput
+                        id='confirmPassword'
+                        name='confirmPassword'
+                        value={confirmPasswordValue}
+                        onChange={(value) => setValue('confirmPassword', value)}
+                        placeholder='Confirm your password'
+                        disabled={isRegistering}
+                        error={!!errors.confirmPassword}
                     />
-                    <label
-                        htmlFor='remember'
-                        className='text-sm font-medium leading-none text-gray-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-                    >
-                        Remember me
-                    </label>
+                    {errors.confirmPassword && (
+                        <p className='text-sm text-red-500'>
+                            {errors.confirmPassword.message}
+                        </p>
+                    )}
                 </div>
 
                 {/* Submit Button */}
                 <Button
                     type='submit'
                     className='w-full'
-                    disabled={isLoggingIn}
+                    disabled={isRegistering}
                 >
-                    {isLoggingIn ? (
+                    {isRegistering ? (
                         <>
                             <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                            Signing in...
+                            Creating account...
                         </>
                     ) : (
-                        'Sign in'
+                        'Create account'
                     )}
                 </Button>
 
@@ -220,14 +240,14 @@ export function LoginForm() {
                     </div>
                 </div>
 
-                {/* Register Link */}
+                {/* Login Link */}
                 <div className='text-center text-sm'>
-                    <span className='text-gray-400'>Don't have an account?</span>{' '}
+                    <span className='text-gray-400'>Already have an account?</span>{' '}
                     <Link
-                        href='/register'
+                        href='/login'
                         className='font-medium text-blue-400 hover:text-blue-300 transition-colors'
                     >
-                        Sign up
+                        Sign in
                     </Link>
                 </div>
             </form>

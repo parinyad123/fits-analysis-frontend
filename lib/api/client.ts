@@ -1,8 +1,4 @@
-/*
-lib/api/client.ts
-
-Axios Client with Interceptors
- */
+// lib/api/client.ts
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/lib/stores/authStore';
@@ -23,18 +19,14 @@ apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const token = useAuthStore.getState().token;
 
-        console.log('Token from store:', token ? `${token.substring(0,20)}...`: 'No Token')
-
         if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
-
-            console.log('Sending request to:', config.url);
-            console.log('Authorization header:', config.headers.Authorization?.substring(0,30) + '...');
         }
 
         return config;
     },
     (error: AxiosError) => {
+        console.error('❌ Request Error:', error);
         return Promise.reject(error);
     }
 );
@@ -42,24 +34,28 @@ apiClient.interceptors.request.use(
 // Response interceptor - Handle errors
 apiClient.interceptors.response.use(
     (response) => response,
-    async (error: AxiosError) => {
-        // debug logging
+    async (error: AxiosError<any>) => {
+        // ✅ Enhanced error logging
         console.error('❌ API Error:', {
             status: error.response?.status,
+            statusText: error.response?.statusText,
             url: error.config?.url,
-            data: error.response?.data
+            method: error.config?.method?.toUpperCase(),
+            // ✅ Log full response data
+            responseData: error.response?.data,
+            // ✅ Log request data
+            requestData: error.config?.data,
         });
-        if (error.response?.status === 401) {
-            // Token expired or invalid
-            useAuthStore.getState().logout();
 
-            // Redirect to login
+        // Handle 401 Unauthorized
+        if (error.response?.status === 401) {
+            useAuthStore.getState().logout();
             if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+                window.location.href = '/login';
             }
         }
 
-        return Promise.reject(error)
+        return Promise.reject(error);
     }
 );
 
