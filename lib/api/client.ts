@@ -35,22 +35,29 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError<any>) => {
-        // ✅ Enhanced error logging
+        // Enhanced error logging
         console.error('❌ API Error:', {
             status: error.response?.status,
             statusText: error.response?.statusText,
             url: error.config?.url,
             method: error.config?.method?.toUpperCase(),
-            // ✅ Log full response data
             responseData: error.response?.data,
-            // ✅ Log request data
-            requestData: error.config?.data,
         });
 
-        // Handle 401 Unauthorized
-        if (error.response?.status === 401) {
+        // ✅ Check if this is an auth endpoint (login/register)
+        const isAuthEndpoint = 
+            error.config?.url?.includes('/auth/login') || 
+            error.config?.url?.includes('/auth/register');
+
+        // ✅ Only handle 401 for non-auth endpoints
+        // If user is already on login page, don't logout again
+        if (error.response?.status === 401 && !isAuthEndpoint) {
+            console.log('🔒 Unauthorized - clearing auth and redirecting to login');
+            
             useAuthStore.getState().logout();
-            if (typeof window !== 'undefined') {
+            
+            // Only redirect if not already on login page
+            if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
                 window.location.href = '/login';
             }
         }

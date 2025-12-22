@@ -16,10 +16,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AxiosError } from 'axios';
 
 export function LoginForm() {
-    const { login, isLoggingIn, loginError } = useAuth();
+    const { login, isLoggingIn, loginError  } = useAuth();
     const [rememberMe, setRememberMe] = useState(false);
     const [mounted, setMounted] = useState(false);
 
@@ -49,48 +48,25 @@ export function LoginForm() {
         }
     }, [setValue]);
 
-    // ✅ Extract error message
-    const getApiErrorMessage = (): string | null => {
-        if (!loginError) return null;
-        
-        const axiosError = loginError as AxiosError<any>;
-        
-        if (axiosError.response?.data) {
-            if (typeof axiosError.response.data === 'string') {
-                return axiosError.response.data;
-            }
-            if (axiosError.response.data.detail) {
-                const detail = axiosError.response.data.detail;
-                return typeof detail === 'string' ? detail : JSON.stringify(detail);
-            }
-            if (axiosError.response.data.message) {
-                return axiosError.response.data.message;
-            }
-        }
-        
-        if (axiosError.response?.status === 401) {
-            return 'Incorrect username or password';
-        }
-        
-        return 'Login failed';
-    };
-
-    const apiErrorMessage = getApiErrorMessage();
-
     const onSubmit = (data: LoginFormData) => {
-        if (rememberMe) {
-            localStorage.setItem('remember_username', data.username);
-        } else {
-            localStorage.removeItem('remember_username');
+        // ✅ Prevent default form submission
+        try {
+            if (rememberMe) {
+                localStorage.setItem('remember_username', data.username);
+            } else {
+                localStorage.removeItem('remember_username');
+            }
+            
+            // Call login mutation
+            login(data);
+        } catch (error) {
+            console.error('Login submission error:', error);
         }
-        
-        login(data);
     };
 
     if (!mounted) {
         return (
             <div className='w-full max-w-md space-y-8'>
-                {/* Loading skeleton */}
                 <div className='text-center'>
                     <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10'>
                         <span className='text-2xl'>🔭</span>
@@ -111,6 +87,25 @@ export function LoginForm() {
         );
     }
 
+    // Extract error message
+    const getApiErrorMessage = (): string | null => {
+        if (!loginError) return null;
+        
+        const axiosError = loginError as any;
+        
+        if (axiosError.response?.data?.detail) {
+            return axiosError.response.data.detail;
+        }
+        
+        if (axiosError.response?.status === 401) {
+            return 'Incorrect username or password. Please try again.';
+        }
+        
+        return 'Login failed. Please try again.';
+    };
+
+    const apiErrorMessage = getApiErrorMessage();
+
     return (
         <div className='w-full max-w-md space-y-8'>
             {/* Header */}
@@ -127,14 +122,24 @@ export function LoginForm() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-                {/* ✅ General API Error */}
+            <form 
+                onSubmit={handleSubmit(onSubmit)} 
+                className='space-y-6'
+                // Prevent browser default form submission
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                        e.preventDefault();
+                        handleSubmit(onSubmit)();
+                    }
+                }}
+            >
+                {/* Error Box */}
                 {apiErrorMessage && (
                     <div className='rounded-lg bg-red-500/10 border border-red-500/50 p-3'>
                         <p className='text-sm text-red-500'>{apiErrorMessage}</p>
                     </div>
                 )}
-
+                
                 {/* Username Field */}
                 <div className='space-y-2'>
                     <Label htmlFor='username' className='text-gray-300'>

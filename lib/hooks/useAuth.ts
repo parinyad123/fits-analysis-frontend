@@ -12,8 +12,11 @@ export function useAuth() {
     const router = useRouter();
     const { setAuth, logout: logoutStore } = useAuthStore();
 
-    // ✅ Helper function to extract error message
+    // Helper function to extract error message
     const getErrorMessage = (error: AxiosError<any>): string => {
+        console.log('🔍 Full error:', error);
+        console.log('🔍 Response data:', error.response?.data);
+        
         let errorMessage = 'An error occurred';
         
         if (error.response?.data) {
@@ -32,6 +35,7 @@ export function useAuth() {
             errorMessage = error.message;
         }
         
+        console.log('📝 Extracted message:', errorMessage);
         return errorMessage;
     };
 
@@ -39,24 +43,34 @@ export function useAuth() {
     const registerMutation = useMutation({
         mutationFn: authApi.register,
         onSuccess: () => {
-            toast.success('Registration successful! Please login.');
+            toast.success('✅ Registration successful! Please login.', {
+                duration: 5000,
+                position: 'top-center',
+            });
             router.replace('/login');
         },
         onError: (error: AxiosError<any>) => {
-            console.error('Registration error:', error);
+            console.error('❌ Registration error:', error);
             
             let errorMessage = getErrorMessage(error);
             
-            // Handle specific status codes
-            if (error.response?.status === 400) {
-                if (errorMessage.toLowerCase().includes('already exists') || 
-                    errorMessage.toLowerCase().includes('duplicate')) {
-                    errorMessage = 'Username already exists. Please choose another username.';
+            if (errorMessage.toLowerCase().includes('already registered') || 
+                errorMessage.toLowerCase().includes('already exists') || 
+                errorMessage.toLowerCase().includes('duplicate')) {
+                const usernameMatch = errorMessage.match(/:\s*(\w+)/);
+                const username = usernameMatch ? usernameMatch[1] : '';
+                
+                if (username) {
+                    errorMessage = `⚠️ Username "${username}" is already taken. Please choose another.`;
+                } else {
+                    errorMessage = '⚠️ This username is already taken. Please choose another.';
                 }
             }
             
-            // Default to toast (will be overridden by onError callback if provided)
-            toast.error(errorMessage);
+            toast.error(errorMessage, {
+                duration: 8000, // ✅ เพิ่มเป็น 8 วินาที
+                position: 'top-center',
+            });
         },
     });
 
@@ -64,6 +78,8 @@ export function useAuth() {
     const loginMutation = useMutation({
         mutationFn: authApi.login,
         onSuccess: async (data) => {
+            console.log('✅ Login successful');
+            
             try {
                 const tempUser = {
                     user_id: 'temp',
@@ -78,25 +94,42 @@ export function useAuth() {
                 const user = await authApi.getCurrentUser();
                 setAuth(user, data.access_token);
 
-                toast.success('Login successful!');
-                router.push('/');
+                toast.success('✅ Login successful!', {
+                    duration: 3000,
+                });
+                
+                // ✅ Small delay before redirect to show toast
+                setTimeout(() => {
+                    router.push('/');
+                }, 500);
             } catch (error: any) {
-                console.error('Failed to get user info:', error);
+                console.error('❌ Failed to get user info:', error);
                 logoutStore();
-                toast.error('Failed to get user information');
+                toast.error('Failed to get user information', {
+                    duration: 8000,
+                    position: 'top-center',
+                });
             }
         },
         onError: (error: AxiosError<any>) => {
-            console.error('Login error:', error);
+            console.error('❌ Login error:', error);
             
             let errorMessage = getErrorMessage(error);
             
+            // ✅ Handle 401 Unauthorized
             if (error.response?.status === 401) {
-                errorMessage = 'Incorrect username or password';
+                errorMessage = '⚠️ Incorrect username or password. Please try again.';
+            }
+            // ✅ Handle other common errors
+            else if (error.code === 'ERR_NETWORK') {
+                errorMessage = '⚠️ Network error. Please check your connection.';
             }
             
-            // Default to toast (will be overridden by onError callback if provided)
-            toast.error(errorMessage);
+            // ✅ Show toast with longer duration
+            toast.error(errorMessage, {
+                duration: 10000, // ✅ 10 วินาที สำหรับ login error
+                position: 'top-center',
+            });
         },
     });
 
@@ -117,7 +150,9 @@ export function useAuth() {
         } finally {
             logoutStore();
             router.push('/login');
-            toast.info('Logged out successfully');
+            toast.info('👋 Logged out successfully', {
+                duration: 3000,
+            });
         }
     };
 
@@ -129,7 +164,6 @@ export function useAuth() {
         isLoading,
         isRegistering: registerMutation.isPending,
         isLoggingIn: loginMutation.isPending,
-        // ✅ Expose error states
         registerError: registerMutation.error,
         loginError: loginMutation.error,
     };
