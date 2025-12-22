@@ -26,7 +26,7 @@ import type { ExpertiseLevel } from '@/lib/types';
 import { toast } from 'sonner';
 
 interface PromptBoxProps {
-    onSubmit: (message: string, fileId: string, expertise: ExpertiseLevel) => void;
+    onSubmit: (message: string, fileId: string | null, expertise: ExpertiseLevel) => void;
     disabled?: boolean;
 }
 
@@ -45,12 +45,12 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
             toast.error('Please enter a message');
             return;
         }
-        if (!selectedFileId) {
-            toast.error('Please select a FITS file');
-            return;
-        }
+        // if (!selectedFileId) {
+        //     toast.error('Please select a FITS file');
+        //     return;
+        // }
 
-        onSubmit(message.trim(), selectedFileId, expertise);
+        onSubmit(message.trim(), selectedFileId || null, expertise);
         setMessage('');
     };
 
@@ -86,7 +86,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder='Ask about your FITS file analysis...'
+                        placeholder='Ask about your FITS file analysis or general astronomy questions...'
                         disabled={disabled}
                         style={{ backgroundColor: 'transparent' }}
                         className='min-h-[60px] resize-none border-0 bg-transparent px-6 py-4 text-base focus-visible:ring-0 focus-visible:ring-offset-0'
@@ -175,6 +175,13 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                     </Button>
                                 </div>
                             )}
+
+                            {/* show hint If these is not FITS file */}
+                            {/* {!selectedFile && (
+                                <span className='yexy-xs text-slate-400'>
+                                    No file selected (optional)
+                                </span>
+                            )} */}
                         </div>
 
                         {/* Right Side - Expertise & Submit */}
@@ -199,9 +206,9 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                             {/* Submit Button */}
                             <Button
                                 onClick={handleSubmit}
-                                disabled={!message.trim() || !selectedFileId || disabled}
+                                disabled={!message.trim() || disabled}
                                 size='icon'
-                                className='h-9 w-9 rounded-full'
+                                className='h-9 w-9 rounded-full bg-violet-100 hover:bg-violet-400'
                             >
                                 <Send className='h-5 w-5' />
                             </Button>

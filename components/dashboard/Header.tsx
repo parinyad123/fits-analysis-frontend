@@ -44,7 +44,7 @@ export function Header() {
                             aria-label='User menu'
                         >
                             <Avatar className='h-9 w-9'>
-                                <AvatarFallback className='bg-[#38761d] text-white font-semibold'>
+                                <AvatarFallback className='bg-[#0c314a] text-white font-semibold'>
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>

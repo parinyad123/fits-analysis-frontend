@@ -36,12 +36,12 @@ function DashboardContent() {
 
     const handleSubmit = (
         message: string,
-        fileId: string,
+        fileId: string | null,
         expertise: ExpertiseLevel
     ) => {
         submit({
             query: message,
-            fits_file_id: fileId,
+            fits_file_id: fileId || undefined, // send undefined if fileId is null
             session_id: sessionId,
             user_expertise: expertise,
         });
