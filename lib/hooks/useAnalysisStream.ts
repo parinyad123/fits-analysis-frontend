@@ -19,17 +19,20 @@ export function useAnalysisStream(
     taskId: string | null,
     options?: useAnalysisStreamOptions
 ) {
-    const { token } = useAuthStore();
+    const { token } = useAuthStore();   // keep it for checking only
     const [status, setStatus] = useState<WorkflowStatusLight | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const eventSourceRef = useRef<EventSource | null>(null);
 
     useEffect(() => {
-        if (!taskId || !token) return;
+        // if (!taskId || !token) return;
+        if (!taskId) return;    // remove token checking because use only cookies 
 
         const url = `${API_BASE_URL}/api/v2/analyze/${taskId}/stream`;
-        const eventSource = new EventSource(url);
+        const eventSource = new EventSource(url, {
+            withCredentials: true 
+        });
         eventSourceRef.current = eventSource;
 
         eventSource.onopen = () => {
@@ -70,7 +73,7 @@ export function useAnalysisStream(
             console.log('Closing SSE connectin');
             eventSource.close();
         };
-    }, [taskId, token, options]);
+    }, [taskId, options]);
 
     const disconnect = () => {
         if (eventSourceRef.current) {

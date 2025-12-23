@@ -9,6 +9,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003';
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
     timeout: 30000,
+    withCredentials: true,  // send cookies for all request
     headers: {
         'Content-Type': 'application/json',
     },
@@ -44,12 +45,12 @@ apiClient.interceptors.response.use(
             responseData: error.response?.data,
         });
 
-        // ✅ Check if this is an auth endpoint (login/register)
+        // Check if this is an auth endpoint (login/register)
         const isAuthEndpoint = 
             error.config?.url?.includes('/auth/login') || 
             error.config?.url?.includes('/auth/register');
 
-        // ✅ Only handle 401 for non-auth endpoints
+        // Only handle 401 for non-auth endpoints
         // If user is already on login page, don't logout again
         if (error.response?.status === 401 && !isAuthEndpoint) {
             console.log('🔒 Unauthorized - clearing auth and redirecting to login');

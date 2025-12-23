@@ -12,7 +12,7 @@ import { PlotInfo, WorkflowStatus, ExpertiseLevel } from "./api.types";
 
 export interface AnalyzeRequest {
     query: string;
-    fits_file_id: string;
+    fits_file_id?: string;
     session_id?: string;
     user_expertise?: ExpertiseLevel;
     // analysis_types?: string[];

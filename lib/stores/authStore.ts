@@ -4,8 +4,9 @@ lib/stores/authStore.ts
 Authentication Store with Zustand + Persist
 */
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import type { User } from '@/lib/types';
+import { apiClient } from '@/lib/api/client'; 
 
 // ==========================================
 // Interface Definitions
@@ -45,10 +46,8 @@ const initialState: AuthState = {
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
-      // Spread initial state
       ...initialState,
 
-      // Actions
       setAuth: (user, token) => {
         set({
           user,
@@ -58,7 +57,21 @@ export const useAuthStore = create<AuthStore>()(
         });
       },
 
-      logout: () => {
+      logout: async () => {  // ✅ Make async
+        console.log('🔓 Logging out...');
+        
+        try {
+          // ✅ Call logout API (will send both Bearer token AND cookie)
+          await apiClient.post('/api/v1/auth/logout');
+          console.log('✅ Server cookie cleared');
+        } catch (err: any) {
+          // ✅ Only log warning if not 401 (401 is expected if token expired)
+          if (err.response?.status !== 401) {
+            console.error('⚠️ Logout API error:', err);
+          }
+        }
+        
+        // ✅ Clear local state
         set(initialState);
       },
 
@@ -77,29 +90,12 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage',
-      
-      // Persist only auth data, not loading states
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
-        // isLoading is excluded (ephemeral state)
       }),
-
-      // Optional: Use sessionStorage for more security
-      // storage: createJSONStorage(() => sessionStorage),
-      
-      // Optional: Version for migration
       version: 1,
-      
-      // Optional: Migrate old data
-      // migrate: (persistedState, version) => {
-      //   if (version === 0) {
-      //     // Migrate from version 0 to 1
-      //     return { ...persistedState, newField: 'value' };
-      //   }
-      //   return persistedState as AuthStore;
-      // },
     }
   )
 );
