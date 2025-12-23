@@ -11,7 +11,7 @@ import type {
     PaginationParams,
 } from '@/lib/types';
 
-export const conversationApi = {
+export const conversationsApi = {
     // get conversation history
     getConversation: async (
         sessionId: string,

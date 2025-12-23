@@ -1,25 +1,31 @@
 // lib/hooks/useConversations.ts
 
 import { useQuery } from '@tanstack/react-query';
-import { conversationApi } from '@/lib/api/conversations.api';
-import type { PaginationParams } from '@/lib/types';
+import { conversationsApi } from '@/lib/api/conversations.api';
 
-export function useConversations(
-    sessionId: string | undefined,
-    params?: PaginationParams
-) {
+// Get conversation by session_id
+export function useConversation(sessionId: string | undefined | null) {
     return useQuery({
-        queryKey: ['conversation', sessionId, params],
-        queryFn: () => conversationApi.getConversation(sessionId!, params),
-        enabled: !!sessionId,
-        refetchInterval: false,
+        queryKey: ['conversation', sessionId],
+        queryFn: () => {
+            console.log('🔍 Fetching conversation:', sessionId);  // Debug log
+            return conversationsApi.getConversation(sessionId!);
+        },
+        enabled: !!sessionId && sessionId !== 'undefined' && sessionId !== 'null',
+        retry: false,
+        staleTime: 30000,
     });
+}
+
+// Get conversations list (alias)
+export function useConversations(sessionId: string | undefined | null) {
+    return useConversation(sessionId); 
 }
 
 export function useMessageCount(sessionId: string | undefined) {
     return useQuery({
         queryKey: ['messageCount', sessionId],
-        queryFn: () => conversationApi.getMessageCount(sessionId!),
+        queryFn: () => conversationsApi.getMessageCount(sessionId!),
         enabled: !!sessionId,
     });
 }

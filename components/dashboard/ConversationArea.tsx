@@ -12,17 +12,34 @@ interface ConversationAreaProps {
 }
 
 export function ConversationArea({ sessionId }: ConversationAreaProps) {
-    const { data, isLoading } = useConversations(sessionId);
+
+    // Debug log: sessionId 
+    useEffect(() => {
+        console.log('📊 ConversationArea received sessionId:', sessionId);
+    }, [sessionId]);
+
+    const { data, isLoading, error, refetch  } = useConversations(sessionId);
     const containerRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Debug log: query
+    useEffect(() => {
+        console.log('📊 ConversationArea state:', {
+            sessionId,
+            hasData: !!data,
+            messagesCount: data?.messages?.length || 0,
+            isLoading,
+            error: error ? String(error) : null
+        });
+    }, [sessionId, data, isLoading, error]);
 
     // Scroll to bottom whenever messages change
     useEffect(() => {
         const scrollToBottom = () => {
             if (messagesEndRef.current) {
                 messagesEndRef.current.scrollIntoView({ 
-                    behavior: 'auto', // ✅ เปลี่ยนจาก 'smooth' เป็น 'auto'
-                    block: 'end'      // ✅ เพิ่ม block: 'end'
+                    behavior: 'auto',
+                    block: 'end'
                 });
             }
         };
@@ -48,17 +65,67 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
         }
     }, [sessionId]);
 
+    // Loading state
     if (isLoading) {
+        console.log('⏳ Loading conversation...');
         return (
             <div className='flex items-center justify-center w-full h-full'>
                 <Loader2 className='h-8 w-8 animate-spin text-violet-500' />
+                <span className='ml-2 text-gray-400'>Loading conversation...</span>
             </div>
         );
     }
 
+    // Error state
+    if (error) {
+        console.error('❌ Conversation error:', error);
+        return (
+            <div className='flex flex-col items-center justify-center w-full h-full text-center px-4'>
+                <div className='mb-4'>
+                    <span className='text-6xl'>❌</span>
+                </div>
+                <h2 className='text-xl font-semibold text-red-500 mb-2'>
+                    Failed to load conversation
+                </h2>
+                <p className='text-gray-400 mb-4'>
+                    {error instanceof Error ? error.message : 'Unknown error'}
+                </p>
+                <button 
+                    onClick={() => {
+                        console.log('🔄 Retrying conversation fetch...');
+                        refetch();
+                    }}
+                    className='px-4 py-2 bg-violet-500 text-white rounded hover:bg-violet-600 transition'
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
+    // No session selected
+    // if (!sessionId) {
+    //     console.log('ℹ️ No session selected');
+    //     return (
+    //         <div className='flex flex-col items-center justify-center w-full h-full text-center px-4 bg-[#0f0f0f]'>
+    //             <div className='mb-6'>
+    //                 <span className='text-6xl'>💬</span>
+    //             </div>
+    //             <h2 className='text-2xl font-semibold text-white mb-2'>
+    //                 No conversation selected
+    //             </h2>
+    //             <p className='text-gray-400 max-w-md'>
+    //                 Select a conversation from the sidebar or start a new one
+    //             </p>
+    //         </div>
+    //     );
+    // }
+
     const messages = data?.messages || [];
 
-    if (messages.length === 0) {
+    // Empty conversation
+    if (!sessionId || messages.length === 0) {
+        console.log('ℹ️ Empty conversation, showing welcome message');
         return (
             <div className='flex flex-col items-center justify-center w-full h-full text-center px-4 bg-[#0f0f0f]'>
                 <div className='mb-6'>
@@ -75,14 +142,15 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
         );
     }
 
+    // Render messages
+    console.log(`✅ Rendering ${messages.length} messages`);
     return (
         <div
             ref={containerRef}
             className='w-full h-full overflow-y-auto overflow-x-hidden scrollbar-thin bg-[#0f0f0f]'
         >
-            {/* ✅ เอา justify-end ออก เพราะ content สูงเกินพื้นที่ */}
             <div className='min-h-full flex flex-col'>
-                <div className='flex-1' /> {/* ✅ Spacer ที่ยืดได้ */}
+                <div className='flex-1' />
                 <div className='pb-4'>
                     {messages.map((message) => (
                         <MessageBubble key={message.message_id} message={message} />

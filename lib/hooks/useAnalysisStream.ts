@@ -5,7 +5,6 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuthStore } from '@/lib/stores/authStore';
 import type { WorkflowStatusLight } from '@/lib/types/analysis.types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003'
@@ -19,24 +18,34 @@ export function useAnalysisStream(
     taskId: string | null,
     options?: useAnalysisStreamOptions
 ) {
-    const { token } = useAuthStore();   // keep it for checking only
     const [status, setStatus] = useState<WorkflowStatusLight | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const eventSourceRef = useRef<EventSource | null>(null);
+    
+    // Store callbacks in ref to prevent re-renders
+    const optionsRef = useRef(options);
+    
+    // Update ref when options change
+    useEffect(() => {
+        optionsRef.current = options;
+    }, [options]);
 
     useEffect(() => {
-        // if (!taskId || !token) return;
-        if (!taskId) return;    // remove token checking because use only cookies 
+        if (!taskId) return;
 
         const url = `${API_BASE_URL}/api/v2/analyze/${taskId}/stream`;
+        
+        console.log('🔄 Connecting to SSE:', taskId);
+        
         const eventSource = new EventSource(url, {
-            withCredentials: true 
+            withCredentials: true
         });
+        
         eventSourceRef.current = eventSource;
 
         eventSource.onopen = () => {
-            console.log('SSE connected:', taskId);
+            console.log('✅ SSE connected:', taskId);
             setIsConnected(true);
             setError(null);
         };
@@ -44,17 +53,17 @@ export function useAnalysisStream(
         eventSource.onmessage = (event) => {
             try {
                 const data: WorkflowStatusLight = JSON.parse(event.data);
-                console.log('SSE update:', data);
+                console.log('📨 SSE update:', data);
 
                 setStatus(data);
 
                 if (data.status === 'completed') {
                     console.log('✅ Analysis completed');
-                    options?.onComplete?.(data);
+                    optionsRef.current?.onComplete?.(data);
                     eventSource.close();
                 } else if (data.status === 'failed') {
                     console.error('❌ Analysis failed:', data.error);
-                    options?.onError?.(data.error || 'Analysis failed');
+                    optionsRef.current?.onError?.(data.error || 'Analysis failed');
                     eventSource.close();
                 }
             } catch (err) {
@@ -70,10 +79,10 @@ export function useAnalysisStream(
         };
 
         return () => {
-            console.log('Closing SSE connectin');
+            console.log('🔌 Closing SSE connection');
             eventSource.close();
         };
-    }, [taskId, options]);
+    }, [taskId]); 
 
     const disconnect = () => {
         if (eventSourceRef.current) {

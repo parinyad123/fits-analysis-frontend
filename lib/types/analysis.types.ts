@@ -35,6 +35,7 @@ export interface WorkflowStatusLight {
   progress: string;
   current_step: string | null;
   error: string | null;
+  session_id?: string;
 }
 
 // export interface WorkflowStatusFull extends WorkflowStatusLight {
