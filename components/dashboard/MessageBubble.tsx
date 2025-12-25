@@ -56,7 +56,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
     return (
         <div className='w-full pt-2 pb-0'>
-            <div className='max-w-4xl mx-auto px-4'>
+            <div className='max-w-3xl mx-auto px-4'>
                 <div className='flex gap-4'>
                     {/* <div
                         className={cn(

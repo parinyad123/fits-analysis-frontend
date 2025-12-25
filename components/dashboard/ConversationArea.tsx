@@ -149,9 +149,20 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
             ref={containerRef}
             className='w-full h-full overflow-y-auto overflow-x-hidden scrollbar-thin bg-[#0f0f0f]'
         >
-            <div className='min-h-full flex flex-col'>
+            {/* <div className='min-h-full flex flex-col'>
                 <div className='flex-1' />
                 <div className='pb-4'>
+                    {messages.map((message) => (
+                        <MessageBubble key={message.message_id} message={message} />
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
+            </div> */}
+
+            <div className='flex flex-col'>
+                <div className='flex-1' />
+                {/* ✅ เพิ่ม max-width ที่ messages container */}
+                <div className='w-full max-w-3xl mx-auto pb-4 px-4'>
                     {messages.map((message) => (
                         <MessageBubble key={message.message_id} message={message} />
                     ))}

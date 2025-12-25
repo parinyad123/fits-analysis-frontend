@@ -162,7 +162,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
 
     return (
         <div className='w-full bg-[#0f0f0f]  p-0'>
-            <div className='max-w-4xl mx-auto'>
+            <div className='max-w-3xl mx-auto'>
                 {/* Main Input Box */}
                 <div className='bg-gray-900 rounded-3xl border border-gray-700 shadow-2xl overflow-hidden'>
                     {/* Textarea */}
@@ -173,7 +173,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                         placeholder='Ask about your FITS file analysis or general astronomy questions...'
                         disabled={disabled}
                         style={{ backgroundColor: 'transparent' }}
-                        className='min-h-[60px] resize-none border-0 bg-transparent px-6 py-4 text-xl focus-visible:ring-0 focus-visible:ring-offset-0'
+                        className='min-h-[60px] resize-none border-0 bg-transparent px-6 py-4 text-base focus-visible:ring-0 focus-visible:ring-offset-0'
                     />
 
                     {/* Bottom Bar */}

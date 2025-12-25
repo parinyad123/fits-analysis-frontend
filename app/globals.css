@@ -353,3 +353,65 @@ pre,
 .prose-chat pre code {
   font-family: var(--font-geist-mono);
 }
+
+
+
+/* Fix Math/LaTeX overflow */
+.katex-display,
+.katex,
+mjx-container {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+
+/* ✅ Better scrollbar for math equations */
+.katex-display::-webkit-scrollbar,
+mjx-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.katex-display::-webkit-scrollbar-track,
+mjx-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.katex-display::-webkit-scrollbar-thumb,
+mjx-container::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 3px;
+}
+
+.katex-display::-webkit-scrollbar-thumb:hover,
+mjx-container::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
+/* ✅ Prevent content overflow in messages */
+.message-content {
+    max-width: 100%;
+    overflow-x: auto;
+    word-wrap: break-word;
+}
+
+.message-content * {
+    max-width: 100%;
+}
+
+/* ✅ Custom scrollbar for main conversation area */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #1F2937;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
