@@ -13,6 +13,8 @@ import {
     ChevronRight,
     Trash2,
     MoreVertical,
+    SquarePen,
+    NotebookPen
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -89,7 +91,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
                     className='w-full justify-start gap-2'
                     variant='default'
                 >
-                    <PlusCircle className='h-4 w-4' />
+                    <SquarePen className='h-4 w-4' />
                     {!collapsed && <span>New Chat</span>}
                 </Button>
             </div>

@@ -21,7 +21,13 @@ import {
     DialogDescription,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Send, FileText, X, Upload } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Plus, Send, FileText, X, Upload, Loader2 } from 'lucide-react';
 import type { ExpertiseLevel } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -35,6 +41,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
     const [selectedFileId, setSelectedFileId] = useState<string>('');
     const [expertise, setExpertise] = useState<ExpertiseLevel>('advanced');
     const [fileDialogOpen, setFileDialogOpen] = useState(false);
+    const [dragActive, setDragActive] = useState(false);
 
     const { files, uploadFile, isUploading } = useFiles();
 
@@ -67,16 +74,93 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
         toast.success('File selected');
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    // const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const file = e.target.files?.[0];
+    //     if (!file) return;
+
+    //     uploadFile(file);
+    //     e.target.value = '';
+    // };
+
+    const handleFileUpload = async (file: File) => {
         if (!file) return;
 
-        uploadFile(file);
-        e.target.value = '';
+        if (!file.name.toLowerCase().endsWith('.fits') && !file.name.toLowerCase().endsWith('.fit')) {
+            toast.error('Please upload a FITS file');
+            return;
+        }
+
+        try {
+            await uploadFile(file);
+            toast.success('File uploaded successfully');
+        } catch (error) {
+            toast.error('Failed to upload file');
+        }
     };
 
+    // Drag & Drop handlers
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    // ✅ Format date
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        // Less than 1 minute
+        if (diffMins < 1) return 'Just now';
+        
+        // Less than 1 hour
+        if (diffMins < 60) return `${diffMins}m ago`;
+        
+        // Less than 24 hours
+        if (diffHours < 24) return `${diffHours}h ago`;
+        
+        // Less than 7 days
+        if (diffDays < 7) return `${diffDays}d ago`;
+        
+        // 7 days or more - show full date
+        return date.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // ✅ Format file size
+    const formatFileSize = (bytes: number) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    };
+
+
     return (
-        // ✅ ไม่ใช้ absolute - ใช้ normal flow
         <div className='w-full bg-[#0f0f0f]  p-0'>
             <div className='max-w-4xl mx-auto'>
                 {/* Main Input Box */}
@@ -89,7 +173,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                         placeholder='Ask about your FITS file analysis or general astronomy questions...'
                         disabled={disabled}
                         style={{ backgroundColor: 'transparent' }}
-                        className='min-h-[60px] resize-none border-0 bg-transparent px-6 py-4 text-base focus-visible:ring-0 focus-visible:ring-offset-0'
+                        className='min-h-[60px] resize-none border-0 bg-transparent px-6 py-4 text-xl focus-visible:ring-0 focus-visible:ring-offset-0'
                     />
 
                     {/* Bottom Bar */}
@@ -98,16 +182,25 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                         <div className='flex items-center gap-2'>
                             {/* Add File Button */}
                             <Dialog open={fileDialogOpen} onOpenChange={setFileDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        variant='ghost'
-                                        size='icon'
-                                        className='h-9 w-9 text-gray-400 hover:text-white'
-                                        disabled={disabled}
-                                    >
-                                        <Plus className='h-5 w-5' />
-                                    </Button>
-                                </DialogTrigger>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <DialogTrigger asChild>
+                                                <Button
+                                                    variant='ghost'
+                                                    size='icon'
+                                                    className='h-9 w-9 text-gray-400 hover:text-white'
+                                                    disabled={disabled}
+                                                >
+                                                    <Plus className='h-5 w-5' />
+                                                </Button>
+                                            </DialogTrigger>
+                                        </TooltipTrigger>
+                                        <TooltipContent side='top'>
+                                            <p>Add FITS file</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 <DialogContent className='max-w-2xl'>
                                     <DialogHeader>
                                         <DialogTitle>Select FITS File</DialogTitle>
@@ -116,43 +209,84 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className='space-y-4'>
-                                        {/* Upload New File */}
-                                        <div className='border-2 border-dashed border-gray-700 rounded-lg p-8 text-center'>
+                                        {/* Upload New File with Drag & Drop */}
+                                        <div
+                                            onDragEnter={handleDrag}
+                                            onDragLeave={handleDrag}
+                                            onDragOver={handleDrag}
+                                            onDrop={handleDrop}
+                                            className={`
+                                                border-2 border-dashed rounded-lg p-8 text-center transition
+                                                ${dragActive
+                                                    ? 'border-violet-500 bg-violet-500/10'
+                                                    : 'border-gray-700 hover:border-gray-600'
+                                                }
+                                            `}>
                                             <input
                                                 type='file'
                                                 accept='.fits,.fit'
-                                                onChange={handleFileUpload}
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) handleFileUpload(file);
+                                                    e.target.value = '';
+                                                }}
                                                 disabled={isUploading}
                                                 className='hidden'
                                                 id='file-upload'
                                             />
                                             <label htmlFor='file-upload' className='cursor-pointer'>
-                                                <Upload className='h-12 w-12 mx-auto mb-4 text-gray-500' />
-                                                <p className='text-sm text-gray-400'>
-                                                    Click to upload FITS file
-                                                </p>
+                                                {isUploading ? (
+                                                    <>
+                                                        <Loader2 className='h-12 w-12 mx-auto mb-4 text-violet-500 animate-spin' />
+                                                        <p className='text-sm text-gray-400'>Uploading...</p>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Upload className='h-12 w-12 mx-auto mb-4 text-gray-500' />
+                                                        <p className='text-sm text-gray-300'>
+                                                            <span className='text-violet-500 hover:text-violet-400'>
+                                                                Click to upload
+                                                            </span>
+                                                            {' '}or drag and drop
+                                                        </p>
+                                                        <p className='text-xs text-gray-500 mt-1'>FITS files only</p>
+                                                    </>
+                                                )}
                                             </label>
                                         </div>
 
-                                        {/* Existing Files */}
+                                        {/* Existing Files with Upload Time */}
                                         <div className='space-y-2 max-h-80 overflow-y-auto'>
-                                            {files.map((file) => (
-                                                <button
-                                                    key={file.file_id}
-                                                    onClick={() => handleFileSelect(file.file_id)}
-                                                    className='w-full flex items-center gap-3 p-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors text-left'
-                                                >
-                                                    <FileText className='h-5 w-5 text-violet-500' />
-                                                    <div className='flex-1 min-w-0'>
-                                                        <p className='text-sm font-medium text-white truncate'>
-                                                            {file.original_filename}
-                                                        </p>
-                                                        <p className='text-xs text-gray-500'>
-                                                            {(file.file_size / 1024 / 1024).toFixed(2)} MB
-                                                        </p>
-                                                    </div>
-                                                </button>
-                                            ))}
+                                            {files.length === 0 ? (
+                                                <div className='text-center py-8 text-gray-500'>
+                                                    No files uploaded yet
+                                                </div>
+                                            ) : (
+                                                files.map((file) => (
+                                                    <button
+                                                        key={file.file_id}
+                                                        onClick={() => handleFileSelect(file.file_id)}
+                                                        className='w-full flex items-center gap-3 p-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors text-left'
+                                                    >
+                                                        <FileText className='h-5 w-5 text-violet-500 flex-shrink-0' />
+                                                        <div className='flex-1 min-w-0'>
+                                                            <p className='text-sm font-medium text-white truncate'>
+                                                                {file.original_filename}
+                                                            </p>
+                                                            {/* Size + Upload Time */}
+                                                            <div className='flex items-center gap-2 mt-0.5'>
+                                                                <p className='text-xs text-gray-500'>
+                                                                    {formatFileSize(file.file_size)}
+                                                                </p>
+                                                                <span className='text-gray-700'>•</span>
+                                                                <p className='text-xs text-gray-500'>
+                                                                    {formatDate(file.uploaded_at)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </button>
+                                                ))
+                                            )}
                                         </div>
                                     </div>
                                 </DialogContent>

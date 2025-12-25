@@ -113,7 +113,9 @@ function DashboardContent() {
     };
 
     return (
-        <div className='h-full w-full flex flex-col'>
+        // <div className='h-full w-full flex flex-col'>
+            <div className='h-full w-full flex justify-center bg-[#0f0f0f]'>
+                <div className='h-full w-full max-w-3xl flex flex-col'>
             <div className='flex-1 min-h-0 overflow-hidden'>
                 <ConversationArea sessionId={validSessionId} />
             </div>
@@ -123,6 +125,7 @@ function DashboardContent() {
                     disabled={isSubmitting || !!currentTaskId}
                 />
             </div>
+        </div>
         </div>
     );
 }
