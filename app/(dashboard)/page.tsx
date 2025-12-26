@@ -33,9 +33,11 @@ function DashboardContent() {
             sessionIdFromUrl,
             currentSessionId,
             validSessionId,
-            currentTaskId
+            currentTaskId,
+            isAnalyzing: !!currentTaskId,
+            isSubmitting  
         });
-    }, [sessionIdFromUrl, currentSessionId, validSessionId, currentTaskId]);
+    }, [sessionIdFromUrl, currentSessionId, validSessionId, currentTaskId, isSubmitting]);
 
     const { refetch: refetchConversation } = useConversations(validSessionId);
 
@@ -116,12 +118,16 @@ function DashboardContent() {
         // <div className='h-full w-full flex flex-col'>
         <div className='h-full w-full flex flex-col bg-[#0f0f0f]'>
             <div className='flex-1 min-h-0 overflow-hidden'>
-                <ConversationArea sessionId={validSessionId} />
+                <ConversationArea 
+                    sessionId={validSessionId} 
+                    isWaitingResponse={!!currentTaskId} 
+                />
             </div>
             <div className='flex-shrink-0'>
                 <PromptBox
                     onSubmit={handleSubmit}
-                    disabled={isSubmitting || !!currentTaskId}
+                    // disabled={isSubmitting || !!currentTaskId}
+                    isAnalyzing={!!currentTaskId}
                 />
             </div>
         </div>

@@ -9,9 +9,10 @@ import { Loader2 } from 'lucide-react';
 
 interface ConversationAreaProps {
     sessionId: string | undefined;
+    isWaitingResponse?: boolean;
 }
 
-export function ConversationArea({ sessionId }: ConversationAreaProps) {
+export function ConversationArea({ sessionId, isWaitingResponse=false }: ConversationAreaProps) {
 
     // Debug log: sessionId 
     useEffect(() => {
@@ -29,9 +30,10 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
             hasData: !!data,
             messagesCount: data?.messages?.length || 0,
             isLoading,
-            error: error ? String(error) : null
+            error: error ? String(error) : null,
+            isWaitingResponse
         });
-    }, [sessionId, data, isLoading, error]);
+    }, [sessionId, data, isLoading, error, isWaitingResponse]);
 
     // Scroll to bottom whenever messages change
     useEffect(() => {
@@ -51,7 +53,7 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
         const timer = setTimeout(scrollToBottom, 100);
         
         return () => clearTimeout(timer);
-    }, [data?.messages]);
+    }, [data?.messages, isWaitingResponse]);
 
     // Initial scroll when session loads
     useEffect(() => {
@@ -163,9 +165,30 @@ export function ConversationArea({ sessionId }: ConversationAreaProps) {
                 <div className='flex-1' />
                 {/* ✅ เพิ่ม max-width ที่ messages container */}
                 <div className='w-full max-w-3xl mx-auto pb-4 px-4'>
-                    {messages.map((message) => (
-                        <MessageBubble key={message.message_id} message={message} />
+                    {messages.map((message, index) => (
+                        <MessageBubble 
+                            key={message.message_id} 
+                            message={message}  
+                            isLastMessage={index === messages.length - 1} 
+                        />
                     ))}
+
+                    {/* Waiting Response Indicator */}
+                    {isWaitingResponse && (
+                        <div className='w-full pt-2 pb-8'>
+                            <div className='max-w-3xl mx-auto px-4'>
+                                <div className='flex items-center gap-3 text-gray-400'>
+                                    <Loader2 className='h-5 w-5 animate-spin text-violet-500' />
+                                    <div className='flex gap-1'>
+                                        <span className='animate-bounce' style={{ animationDelay: '0ms' }}>●</span>
+                                        <span className='animate-bounce' style={{ animationDelay: '150ms' }}>●</span>
+                                        <span className='animate-bounce' style={{ animationDelay: '300ms' }}>●</span>
+                                    </div>
+                                    <span className='text-sm'>Thinking...</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div ref={messagesEndRef} />
                 </div>
             </div>

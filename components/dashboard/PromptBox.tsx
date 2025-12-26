@@ -34,9 +34,10 @@ import { toast } from 'sonner';
 interface PromptBoxProps {
     onSubmit: (message: string, fileId: string | null, expertise: ExpertiseLevel) => void;
     disabled?: boolean;
+    isAnalyzing?: boolean;
 }
 
-export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
+export function PromptBox({ onSubmit, disabled = false, isAnalyzing = false }: PromptBoxProps) {
     const [message, setMessage] = useState('');
     const [selectedFileId, setSelectedFileId] = useState<string>('');
     const [expertise, setExpertise] = useState<ExpertiseLevel>('advanced');
@@ -52,10 +53,6 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
             toast.error('Please enter a message');
             return;
         }
-        // if (!selectedFileId) {
-        //     toast.error('Please select a FITS file');
-        //     return;
-        // }
 
         onSubmit(message.trim(), selectedFileId || null, expertise);
         setMessage('');
@@ -64,7 +61,9 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSubmit();
+            if (!isAnalyzing) {
+                handleSubmit();
+            }
         }
     };
 
@@ -92,9 +91,8 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
 
         try {
             await uploadFile(file);
-            toast.success('File uploaded successfully');
         } catch (error) {
-            toast.error('Failed to upload file');
+            // Error handled by useFiles hook
         }
     };
 
@@ -110,7 +108,18 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
         }
     };
 
-    // ✅ Format date
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    };
+
+    // Format date
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -136,29 +145,17 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            // hour: '2-digit',
+            // minute: '2-digit'
         });
     };
 
-    // ✅ Format file size
+    // Format file size
     const formatFileSize = (bytes: number) => {
         if (bytes < 1024) return `${bytes} B`;
         if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-
-        const file = e.dataTransfer.files?.[0];
-        if (file) {
-            handleFileUpload(file);
-        }
-    };
-
 
     return (
         <div className='w-full bg-[#0f0f0f]  p-0'>
@@ -196,11 +193,12 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                                 </Button>
                                             </DialogTrigger>
                                         </TooltipTrigger>
-                                        <TooltipContent side='top'>
+                                        <TooltipContent side='bottom'>
                                             <p>Add FITS file</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
+
                                 <DialogContent className='max-w-2xl'>
                                     <DialogHeader>
                                         <DialogTitle>Select FITS File</DialogTitle>
@@ -221,6 +219,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                                     ? 'border-violet-500 bg-violet-500/10'
                                                     : 'border-gray-700 hover:border-gray-600'
                                                 }
+                                                ${isUploading  ? 'opacity-50 pointer-events-none' : ''}
                                             `}>
                                             <input
                                                 type='file'
@@ -236,10 +235,16 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                             />
                                             <label htmlFor='file-upload' className='cursor-pointer'>
                                                 {isUploading ? (
-                                                    <>
-                                                        <Loader2 className='h-12 w-12 mx-auto mb-4 text-violet-500 animate-spin' />
-                                                        <p className='text-sm text-gray-400'>Uploading...</p>
-                                                    </>
+                                                    // Circular Loading Spinner
+                                                    <div className='flex flex-col items-center gap-3'>
+                                                        <Loader2 className='h-12 w-12 text-violet-500 animate-spin' />
+                                                        <p className='text-sm text-gray-300 font-medium'>
+                                                            Uploading file...
+                                                        </p>
+                                                        <p className='text-xs text-gray-500'>
+                                                            Please wait
+                                                        </p>
+                                                    </div>
                                                 ) : (
                                                     <>
                                                         <Upload className='h-12 w-12 mx-auto mb-4 text-gray-500' />
@@ -304,6 +309,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                                         size='icon'
                                         className='h-5 w-5 hover:bg-gray-600'
                                         onClick={() => setSelectedFileId('')}
+                                        // disabled={isAnalyzing}
                                     >
                                         <X className='h-3 w-3' />
                                     </Button>
@@ -340,7 +346,7 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
                             {/* Submit Button */}
                             <Button
                                 onClick={handleSubmit}
-                                disabled={!message.trim() || disabled}
+                                disabled={!message.trim() || disabled || isAnalyzing} // disable if analizing
                                 size='icon'
                                 className='h-9 w-9 rounded-full bg-violet-100 hover:bg-violet-400'
                             >
@@ -352,7 +358,10 @@ export function PromptBox({ onSubmit, disabled = false }: PromptBoxProps) {
 
                 {/* Helper Text */}
                 <p className='text-xs text-gray-500 text-center my-0 py-2'>
-                    Press Enter to send, Shift + Enter for new line
+                    {isAnalyzing 
+                        ? 'Thinking in progress...' 
+                        : 'Press Enter to send, Shift + Enter for new line'
+                    }
                 </p>
             </div>
         </div>

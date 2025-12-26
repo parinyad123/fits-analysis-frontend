@@ -14,6 +14,7 @@ import 'katex/dist/katex.min.css';
 
 interface MessageBubbleProps {
     message: ConversationMessageLight;
+    isLastMessage?: boolean;
 }
 
 function getImageUrl(src: string): string {
@@ -55,7 +56,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     };
 
     return (
-        <div className='w-full pt-2 pb-0'>
+        // <div className='w-full pt-2 pb-0'>
+        <div className={cn(
+            'w-full',
+            isUser ? 'pt-8 pb-0' : 'pt-2 pb-8', // ✅ User: เว้นบน, AI: เว้นล่าง
+           
+        )}>
             <div className='max-w-3xl mx-auto px-4'>
                 <div className='flex gap-4'>
                     {/* <div
@@ -71,10 +77,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                         )}
                     </div> */}
 
-                    <div className='flex-1 min-w-0'>
+                    <div className='flex-1 min-w-0 '>
                         {isUser ? (
                             <div className='flex justify-end'>
-                            <div className='bg-gray-900 rounded-2xl px-5 py-3 inline-block max-w-[80%]'>
+                            <div className='bg-zinc-800 rounded-2xl px-5 py-3 inline-block max-w-[80%]'>
                                 <p className='text-gray-100 whitespace-pre-wrap'>
                                     {message.content}
                                 </p>
